@@ -1,6 +1,19 @@
 // Importing our main server
 import express from "express";
 
+// Importing all of the functions we created in storage.ts for 
+// our video processing and handling 
+import { 
+  uploadProcessedVideo,
+  downloadRawVideo,
+  deleteRawVideo,
+  deleteProcessedVideo,
+  convertVideo,
+  setupDirectories
+} from './storage';
+// Create the local directories for videos
+setupDirectories();
+
 // Importing ffmpeg to handle our video transcoding & encoding
 import ffmpeg from 'fluent-ffmpeg';
 
@@ -10,42 +23,63 @@ const app = express();
 app.use(express.json());
 
 // Creating a post request so users can post their video:
-app.post('/process-video', (req, res) => {
-  // Defining our input video location
-  const inputFilePath = req.body.inputFilePath;
-  // Defining our output video location (the one we are transcoding to create)
-  const outputFilePath = req.body.outputFilePath;
-
-  // Checking that our input and output file paths both exist
-  if (!inputFilePath || !outputFilePath) {
-    return res.status(400).send('Bad Request: Missing file path');
+app.post('/process-video', async (req, res) => 
+  {
+  // Get the bucket and filename from the Cloud Pub/Sub message
+  // THIS CAN BE FOUND ON THE GOOGLE CLOUD STORAGE DOCUMENTATION FOR NODE.JS
+  let data;
+  try {
+    const message = Buffer.from(req.body.message.data, 'base64').toString('utf8');
+    data = JSON.parse(message);
+    if (!data.name) {
+      throw new Error('Invalid message payload received.');
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send('Bad Request: missing filename.');
   }
 
-  // Ensure the input and output paths are different
-  if (inputFilePath === outputFilePath) {
-    return res.status(400).send('Input and output file paths must be different');
+  // Getting the file name: 
+  const inputFileName = data.name;
+  const outputFileName = `processed-${inputFileName}`;
+
+  // Download the raw video from Cloud Storage
+  // and we make our function Async so that this can be returned as a promise (Think of it
+  // as function insurance to make sure things don't go wrong:)
+  await downloadRawVideo(inputFileName);
+
+  // Process the video into 360p
+  // We put this function in a try catch as it is possible that this function fails:
+  try { 
+    // Try to convert the video 
+    await convertVideo(inputFileName, outputFileName)
+  } catch (err) {
+    // If it fails ->
+    await Promise.all(
+      //Here we define an array of pomisses we need to complete: 
+      [
+      // Delete the raw video and the processed video 
+      // as the video is probaby being stored somewhere sense that processing failed 
+      // and as such we need to delete that "In Progress" try 
+      deleteRawVideo(inputFileName),
+      deleteProcessedVideo(outputFileName)
+    ]);
+    // then send a failure status:
+    return res.status(500).send('Processing failed');
+  }
+  
+  // Upload the processed video to Cloud Storage
+  await uploadProcessedVideo(outputFileName);
+  // If it went well then we still need to delete the "Mid Process" video
+  await Promise.all([
+    deleteRawVideo(inputFileName),
+    deleteProcessedVideo(outputFileName)
+  ]);
+  // Then we can tell the user that the data has been processed: 
+  return res.status(200).send('Processing finished successfully');
   }
 
-  // Since our video location is valid, we can transcode our video by calling
-  // ffmpeg with our location and details:
-  // Create the ffmpeg command
-  ffmpeg(inputFilePath)
-    // Defining our video transcode options
-    .outputOptions('-vf', 'scale=-1:360') // Video File and 360p
-    // On completion we define this function:
-    .on('end', function() {
-      // If it worked we can tell them that our video posted correctly:
-      console.log('Processing finished successfully');
-      res.status(200).send('Processing finished successfully');
-    })
-    // Creating a function to handle our error:
-    .on('error', function(err: any) {
-      console.log('An error occurred: ' + err.message);
-      res.status(500).send('An error occurred: ' + err.message);
-    })
-    // Saving our output file path
-    .save(outputFilePath);
-});
+);
 
 // Defining the port (Web Address) where we can access our site locally
 const port = process.env.PORT || 3000;
