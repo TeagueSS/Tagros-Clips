@@ -53,7 +53,9 @@ app.post('/process-video', async (req, res) =>
   try { 
     // Try to convert the video 
     await convertVideo(inputFileName, outputFileName)
-  } catch (err) {
+  }
+   catch (err) 
+   {
     // If it fails ->
     await Promise.all(
       //Here we define an array of pomisses we need to complete: 
@@ -68,6 +70,7 @@ app.post('/process-video', async (req, res) =>
     return res.status(500).send('Processing failed');
   }
   
+
   // Upload the processed video to Cloud Storage
   await uploadProcessedVideo(outputFileName);
   // If it went well then we still need to delete the "Mid Process" video

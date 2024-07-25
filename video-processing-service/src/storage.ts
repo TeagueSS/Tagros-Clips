@@ -95,10 +95,22 @@ export async function downloadRawVideo(fileName: string) {
  * @returns A promise that resolves when the file has been uploaded.
  */
 export async function uploadProcessedVideo(fileName: string) {
+
     // Finding out what bucket our video is being stored in:
     const bucket = storage.bucket(processedVideoBucketName);
+
+    // Check if the bucket is accessible
+    const [exists] = await bucket.exists();
+    if (!exists) {
+        console.error(`Bucket ${processedVideoBucketName} does not exist or is not accessible.`);
+        return;
+    }
+    
+    console.log('Attempting to Upload Video to:  ' + processedVideoBucketName);
+
     // Uploading our video to the bucket 
     // Upload video to the bucket
+    
   await storage.bucket(processedVideoBucketName)
   .upload(`${localProcessedVideoPath}/${fileName}`, {
     destination: fileName,
