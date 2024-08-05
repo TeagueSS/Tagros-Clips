@@ -2,10 +2,9 @@ import * as functions from "firebase-functions";
 import {initializeApp} from "firebase-admin/app";
 import {Firestore} from "firebase-admin/firestore";
 import * as logger from "firebase-functions/logger";
-// Importing google cloud storage buckets so we can 
-// generate a one time link for our user 
+// Importing google cloud storage buckets so we can
+// generate a one time link for our user
 import {Storage} from "@google-cloud/storage";
-// 
 import {onCall} from "firebase-functions/v2/https";
 
 

@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { onAuthStateChangedHelper } from "../firebase/firebase";
 import { User } from "firebase/auth";
 import SignIn from "./sign-in";
+import Upload from "./upload";
 
 
 function NavBar() {
@@ -32,6 +33,11 @@ function NavBar() {
         <img className={styles.logo} src="/youtube-logo.svg" alt="YouTube Logo" />
       </span>
     </Link>
+
+    { 
+      user && <Upload /> // Adding our upload component 
+    }
+    
     <SignIn user={user} />
   </nav>
   );
