@@ -16,7 +16,10 @@ import {
 const firebaseConfig = {
   apiKey: "AIzaSyBdGCeQn7ho4UP1IjFudfZkvBePVlja01g",
   authDomain: "tagrosclips.firebaseapp.com",
+  databaseURL: "https://tagrosclips-default-rtdb.firebaseio.com",
   projectId: "tagrosclips",
+  storageBucket: "tagrosclips.appspot.com",
+  messagingSenderId: "172138021945",
   appId: "1:172138021945:web:6f3c2e2004a597823839e8",
   measurementId: "G-JV6FQ0G8NF"
 };

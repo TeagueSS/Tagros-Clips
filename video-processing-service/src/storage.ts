@@ -48,6 +48,34 @@ export function convertVideo(rawVideoName: string, processedVideoName: string) {
 }
 
 
+/*  DeleteCloudVideo 
+a function to delete the video in our GCS bucket after we have successfully processed,
+hopefully removing it from GCS 
+  
+
+*/
+export async function deleteCloudVideo(fileName: string)
+{
+  // Attempting to delete our video 
+  console.log("Trying to delete: " , fileName , "From GCS:")
+  try{
+    // Deleting our video 
+    await storage.bucket(rawVideoBucketName).file(fileName).delete();
+    // Returnig that we successfully deleted our video: 
+    console.log(fileName , " Succesfully Deleted")
+    return true;
+  }
+  catch (err) {
+    // Stating our error 
+    console.error('Failed to delete file:', fileName, 'from bucket:', rawVideoBucketName);
+    console.error('Error:', err);
+    // Marking that our try failed: 
+    return false;
+}
+}
+
+
+
 /**
  * @param fileName - The name of the file to download from the 
  * {@link rawVideoBucketName} bucket into the {@link localRawVideoPath} folder.

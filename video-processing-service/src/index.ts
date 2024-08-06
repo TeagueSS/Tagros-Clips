@@ -1,12 +1,13 @@
 import express from 'express';
 
-import { 
+import {
   uploadProcessedVideo,
   downloadRawVideo,
   deleteRawVideo,
   deleteProcessedVideo,
   convertVideo,
-  setupDirectories
+  setupDirectories,
+  deleteCloudVideo
 } from './storage';
 
 // Create the local directories for videos
@@ -33,12 +34,12 @@ app.post('/process-video', async (req, res) => {
 
   const inputFileName = data.name;
   const outputFileName = `processed-${inputFileName}`;
-
+  
   // Download the raw video from Cloud Storage
   await downloadRawVideo(inputFileName);
 
   // Process the video into 360p
-  try { 
+  try {
     await convertVideo(inputFileName, outputFileName)
   } catch (err) {
     await Promise.all([
@@ -47,19 +48,20 @@ app.post('/process-video', async (req, res) => {
     ]);
     return res.status(500).send('Processing failed');
   }
-  
+
   // Upload the processed video to Cloud Storage
   await uploadProcessedVideo(outputFileName);
 
   await Promise.all([
     deleteRawVideo(inputFileName),
-    deleteProcessedVideo(outputFileName)
+    deleteProcessedVideo(outputFileName),
+    deleteCloudVideo(inputFileName),
   ]);
 
   return res.status(200).send('Processing finished successfully');
 });
-
+  
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on port ${port}`);
 });

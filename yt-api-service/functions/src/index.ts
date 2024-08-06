@@ -1,5 +1,5 @@
 import * as functions from "firebase-functions";
-import {initializeApp} from "firebase-admin/app";
+import {initializeApp, applicationDefault} from "firebase-admin/app";
 import {Firestore} from "firebase-admin/firestore";
 import * as logger from "firebase-functions/logger";
 // Importing google cloud storage buckets so we can
@@ -8,7 +8,10 @@ import {Storage} from "@google-cloud/storage";
 import {onCall} from "firebase-functions/v2/https";
 
 
-initializeApp();
+// Now initalizing with our appilicationDefault credental
+initializeApp({
+  credential: applicationDefault(),
+});
 
 const firestore = new Firestore();
 // Creating our storage instance:
@@ -18,15 +21,30 @@ const storage = new Storage();
 const rawVideoBucketName = "ts-yt-raw-videos";
 
 // Building a function for adding a user to our database:
-export const createUser = functions.auth.user().onCreate((user) => {
+export const createUser = functions.auth.user().onCreate(async (user) =>{
+  logger.info("Attempting to create user");
+
+  // Creating user info
   const userInfo = {
     uid: user.uid,
     email: user.email,
     photoUrl: user.photoURL,
   };
 
-  firestore.collection("users").doc(user.uid).set(userInfo);
-  logger.info(`User Created: ${JSON.stringify(userInfo)}`);
+  try {
+    // Check access to the Firestore collection
+    const collectionRef = firestore.collection("users");
+    await collectionRef.get();
+
+    // Add user information to Firestore
+    await collectionRef.doc(user.uid).set(userInfo);
+
+    logger.info("User Created: " , JSON.stringify(userInfo));
+  } catch (error) {
+    logger.error("Error accessing Firestore collection or creating user:"
+      , error);
+  }
+
   return;
 });
 
