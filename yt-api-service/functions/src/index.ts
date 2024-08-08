@@ -75,3 +75,27 @@ export const generateUploadUrl = onCall({maxInstances: 1}, async (request) => {
 
   return {url, fileName};
 });
+
+const videoCollectionId = "videos";
+
+export interface Video {
+  id?: string,
+  uid?: string,
+  filename?: string,
+  status?: "processing" | "processed",
+  title?: string,
+  description?: string
+}
+
+// Creating a function to handle getting information about a video
+// We set the max instances to 1 and make it async so we can await
+// the completion of what's inside
+// TODO if we wanted to make video's taylored we would
+// need to take the user ID as an input
+export const getVideos = onCall({maxInstances: 1}, async () => {
+  const querySnapshot =
+  // Only getting 10 videos
+  await firestore.collection(videoCollectionId).limit(10).get();
+  // Getting all of the video data as a map we can use
+  return querySnapshot.docs.map((doc) => doc.data());
+});
