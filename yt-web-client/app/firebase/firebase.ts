@@ -8,6 +8,8 @@ import {
       User } from "firebase/auth";
 
 
+      
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -29,6 +31,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+// Creating our functions:
+import { getFunctions } from "firebase/functions";
+// Creating an instance of our functions from our app 
+export const functions = getFunctions(app);
 
 
 /**

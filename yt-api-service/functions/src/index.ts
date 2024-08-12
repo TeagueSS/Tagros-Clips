@@ -7,7 +7,6 @@ import * as logger from "firebase-functions/logger";
 import {Storage} from "@google-cloud/storage";
 import {onCall} from "firebase-functions/v2/https";
 
-
 // Now initalizing with our appilicationDefault credental
 initializeApp({
   credential: applicationDefault(),
