@@ -1,11 +1,13 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { 
+import {
   getAuth,
-   signInWithPopup,
-    GoogleAuthProvider,
-     onAuthStateChanged,
-      User } from "firebase/auth";
+  signInWithPopup,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  User
+} from "firebase/auth";
+import { getFunctions } from "firebase/functions";
 
 
       
@@ -32,9 +34,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 // Creating our functions:
-import { getFunctions } from "firebase/functions";
+//import { getFunctions } from "firebase/functions";
 // Creating an instance of our functions from our app 
-export const functions = getFunctions(app);
+
 
 
 /**
@@ -60,3 +62,6 @@ export function signOut() {
 export function onAuthStateChangedHelper(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
 }
+
+
+export const functions = getFunctions(app);

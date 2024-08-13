@@ -3,6 +3,7 @@ import Link from 'next/link';
 import styles from "./page.module.css";
 import { getVideos } from "./firebase/functions";
 
+
 export default async function Home() {
   //Getting our videos 
   const videos = await getVideos();
@@ -20,3 +21,5 @@ export default async function Home() {
   )
 }
 
+// Making to that we refresh our page every 30 seconds for the user 
+export const revalidate = 30;
