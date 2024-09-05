@@ -11,7 +11,7 @@ import { User } from "firebase/auth";
 import SignIn from "./sign-in";
 import Upload from "./upload";
 
-
+//HI
 function NavBar() {
   // Initialize user state
   const [user, setUser] = useState<User | null>(null);
